@@ -1,5 +1,3 @@
-// import searchImages from './js/pixabay-api';
-// import { renderGallery } from './js/render-functions';
 
 import iziToast from "izitoast";
 import "izitoast/dist/css/iziToast.min.css";

@@ -3,6 +3,9 @@
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
+import iziToast from 'izitoast';
+import 'izitoast/dist/css/iziToast.min.css';
+
 const URL = 'https://pixabay.com/api/';
 const API_KEY = '42552421-44c442bdd9fc0080a82eeb482';
 
@@ -10,7 +13,9 @@ let currentPage = 1;
 let currentQuery = '';
 
 // Функция для отображения галереи изображений
-export const renderGallery = (images) => {
+export const renderGallery = (response) => {
+  const images = response.hits || [];
+  const totalHits = response.totalHits || 0;
   const galleryContainer = document.getElementById('gallery');
   const loadMoreBtn = document.getElementById('load-more-btn');
   const loadingIndicator = document.getElementById('loading-indicator');
@@ -49,9 +54,20 @@ export const renderGallery = (images) => {
    // Обновляем SimpleLightbox для учета новых изображений
     lightbox.refresh();
     
+    // Проверяем, достигли ли конца коллекции
+  if (images.length >= totalHits) {
+    loadMoreBtn.style.display = 'none';
+    iziToast.info({
+      title: 'Info',
+      message: "We're sorry, but you've reached the end of search results.",
+    });
+  } else {
     loadMoreBtn.style.display = 'block';
+  }
+
   loadingIndicator.style.display = 'none';
 };
+
 
 
 
@@ -104,10 +120,14 @@ const createInfoElement = (label, value) => {
 
 const loadMoreImages = async () => {
   currentPage++;
-  const response = await fetchImages(currentQuery, currentPage);
+  try {
+    const response = await fetchImages(currentQuery, currentPage);
 
-  if (response) {
-    renderGallery(response.hits);
+    if (response) {
+      renderGallery(response); // Передаем в renderGallery объект response
+    }
+  } catch (error) {
+    console.error('Error loading more images:', error);
   }
 };
 
@@ -145,15 +165,25 @@ document.getElementById('search-form').addEventListener('submit', async (event) 
   event.preventDefault();
  
     // Получаем значение из поисковой строки
-    const query = event.target.querySelector('#search-input').value;
-    
+  const query = event.target.querySelector('#search-input').value;
   currentPage = 1;
   currentQuery = query;
 
-  const response = await fetchImages(query, currentPage);
+ 
+   try {
+    const response = await fetchImages(query, currentPage);
 
-  if (response) {
-    renderGallery(response.hits);
+    if (response && response.hits.length > 0) {
+      renderGallery(response);
+    } else {
+      // Вывод сообщения, что изображения не найдены
+      console.log("No images found for the given query.");
+      renderGallery({ hits: [], totalHits: 0 });
+    }
+  } catch (error) {
+    // Обработка других ошибок
+    console.error('Error fetching images:', error);
   }
 });
+
 

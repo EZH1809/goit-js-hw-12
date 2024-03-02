@@ -18,14 +18,18 @@ async function searchImages(query) {
 
     const data = response.data;
 
-    if (data.hits.length === 0) {
+      if (!data.hits || data.hits.length === 0) {
       throw new Error('No images found for the given query.');
     }
 
-    return data.hits;
+      return data.hits;
+      
+
   } catch (error) {
-    console.error('Error fetching images:', error);
-    throw error;
+    // Выводим сообщение об ошибке
+    console.error('Error fetching images:', error.message);
+    // Возвращаем пустой массив в случае ошибки, чтобы обработать ее в вызывающем коде
+    return [];
   }
 }
 

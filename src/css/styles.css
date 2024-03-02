@@ -101,6 +101,12 @@ button:hover {
   justify-content: space-between;
 }
 
+#load-more-btn{
+ display: none;
+ width: 160px;
+}
+
+
 
 
 
