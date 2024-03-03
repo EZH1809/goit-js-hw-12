@@ -7,18 +7,19 @@ import "izitoast/dist/css/iziToast.min.css";
 import searchImages from './js/pixabay-api';
 import { renderGallery } from './js/render-functions';
 
-// Cсылки на элементы формы поиска, ввода и индикатора загрузки.
+// Ссылки на элементы формы поиска, ввода и индикатора загрузки.
 const searchForm = document.getElementById('search-form');
 const searchInput = document.getElementById('search-input');
-const loader = document.querySelector('.loader');
+const galleryContainer = document.getElementById('gallery');
 const loadMoreBtn = document.getElementById('load-more-btn');
+const loader = document.querySelector('.loader'); // изменено на .loader
+const loadingIndicator = document.querySelector('.loader'); // изменено на .loader
 
+let currentQuery = ''; // хранит текущий запрос
 let currentPage = 1;
-let currentQuery = '';
 
 // clearGallery очищает контейнер галереи.
 function clearGallery() {
-  const galleryContainer = document.getElementById('gallery');
   galleryContainer.innerHTML = '';
 }
 
@@ -48,11 +49,14 @@ searchForm.addEventListener('submit', function (event) {
       title: 'Warning',
       message: 'Please enter a search term.',
     });
-    clearGallery(); // Очистка галереи при вводе пустой строки
-    hideLoader(); // Припиняємо показ індикатора завантаження
+     hideLoader();
+    loadMoreBtn.style.display = 'none'; // Скрываем кнопку "Load more"
 
     return;
   }
+
+   // Сохраняем текущий запрос
+  currentQuery = query;
 
   // Иначе, вызывается функция showLoader для отображения индикатора загрузки
   showLoader();
@@ -69,6 +73,7 @@ searchForm.addEventListener('submit', function (event) {
         });
       } else {
         renderGallery(images);
+            loadMoreBtn.style.display = 'block'; // Отображаем кнопку "Load more"
         searchInput.value = '';
       }
     })
@@ -82,5 +87,26 @@ searchForm.addEventListener('submit', function (event) {
     })
     .finally(() => {
       hideLoader(); 
+    });
+});
+
+// Обработчик события для кнопки "Load more"
+loadMoreBtn.addEventListener('click', function () {
+  // Отправляем запрос на следующую страницу с текущим запросом
+  showLoader();
+  searchImages(currentQuery)
+    .then(images => {
+      if (images.length === 0) {
+        // Если изображения не найдены, скрываем кнопку "Load more"
+        loadMoreBtn.style.display = 'none';
+        hideLoader();
+      } else {
+        renderGallery(images);
+        hideLoader();
+      }
+    })
+    .catch(error => {
+      console.error('Error loading more images:', error);
+      hideLoader();
     });
 });
