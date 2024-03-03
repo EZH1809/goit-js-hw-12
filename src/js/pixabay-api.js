@@ -1,10 +1,9 @@
-import axios from 'axios';
-
 // функции для HTTP-запросов.
-
+import axios from 'axios';
 
 const URL = 'https://pixabay.com/api/';
 const API_KEY = '42552421-44c442bdd9fc0080a82eeb482';
+
 
 async function searchImages(query) {
   const apiUrl = `${URL}?key=${API_KEY}&q=${query}&image_type=photo&orientation=horizontal&safesearch=true`;
@@ -27,9 +26,9 @@ async function searchImages(query) {
 
   } catch (error) {
     // Выводим сообщение об ошибке
-    console.error('Error fetching images:', error.message);
-    // Возвращаем пустой массив в случае ошибки, чтобы обработать ее в вызывающем коде
-    return [];
+    console.error('Error fetching images:', error);
+     throw error;
+   
   }
 }
 

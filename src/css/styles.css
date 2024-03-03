@@ -100,15 +100,55 @@ button:hover {
   text-align: center;
   justify-content: space-between;
 }
-
+/*button load more... */
 #load-more-btn{
  display: none;
- width: 160px;
+ width: 200px;
+ position: relative;
+   overflow: hidden;
+   z-index: 1;
+   padding: 10px 40px;
+   margin: 0 20px;
+   font-family: 'Montserrat', sans-serif;
+   font-weight: 600;
+   line-height: 30px;
+   color: white;
+   font-size: 15px;
+   text-transform: uppercase;
+   background: #f5b08f;
+   border-width: 0;
+   box-shadow: 5px 5px 0 #532831;
+   outline: none;
+   cursor: pointer;
+   transition: 1.5s;
 }
-
-
-
-
+#load-more-btn:before, #load-more-btn:after {
+   content: "";
+   position: absolute;
+   height: 200px;
+   left: -50%;
+   margin-top: -100px;
+   top: 50%;
+   width: 200px;
+   border-radius: 50%;
+   opacity: 0.3;
+   z-index: -1;
+   transform: scale(0);
+}
+#load-more-btn:before {
+   background: #ffeede;
+   transition: .8s ease-out;
+}
+#load-more-btn:after {
+   transition: .4s ease-in .3s;
+}
+#load-more-btn:hover {
+   color: #532831;
+}
+#load-more-btn:hover:before, #load-more-btn:hover:after {
+   opacity: 1;
+   transform: scale(4);
+}
 
 
 /* loader*/

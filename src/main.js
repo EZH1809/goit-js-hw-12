@@ -1,3 +1,5 @@
+// логика работы приложения
+//импорт библиотеки и модулей 
 
 import iziToast from "izitoast";
 import "izitoast/dist/css/iziToast.min.css";
@@ -9,6 +11,10 @@ import { renderGallery } from './js/render-functions';
 const searchForm = document.getElementById('search-form');
 const searchInput = document.getElementById('search-input');
 const loader = document.querySelector('.loader');
+const loadMoreBtn = document.getElementById('load-more-btn');
+
+let currentPage = 1;
+let currentQuery = '';
 
 // clearGallery очищает контейнер галереи.
 function clearGallery() {
@@ -43,6 +49,8 @@ searchForm.addEventListener('submit', function (event) {
       message: 'Please enter a search term.',
     });
     clearGallery(); // Очистка галереи при вводе пустой строки
+    hideLoader(); // Припиняємо показ індикатора завантаження
+
     return;
   }
 
