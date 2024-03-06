@@ -124,6 +124,7 @@ function alertNoEmptySearch() {
     title: 'Error',
     message: 'The search string cannot be empty. Please specify your search query.',
   });
+  return;
 }
 
 // Сообщение о завершении коллекции изображений
@@ -133,13 +134,15 @@ function alertEndOfSearch() {
     message: "We're sorry, but you've reached the end of search results.",
     position: 'bottomRight',
   });
+  return;
 }
 
 // Изображения не найдены
 function alertNoImagesFound() {
   iziToast.error({
-    title: '',
+    title: 'Info',
     message: "Sorry, there are no images matching your search query. Please try again!",
     position: 'bottomRight',
   });
+  return;
 }
