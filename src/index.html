@@ -3,9 +3,9 @@
 
 <head>
   <meta charset="UTF-8" />
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>goit-js-hw-11</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/modern-normalize/2.0.0/modern-normalize.min.css" />
+  <title>goit-js-hw-12</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
@@ -14,17 +14,21 @@
 
 <body>
 
-
-  <form id="search-form">
-    <input type="text" id="search-input" placeholder="Enter search term">
+<div class="search-container">
+  <form class="search-form" id="search-form">
+    <input class="input" type="text" name="searchQuery" placeholder="Search images...">
     <button type="submit">Search</button>
   </form>
+</div>
+<div class="gallery-container">
+  
+  <div class="gallery"></div>
 
-  <div id="gallery"></div>
+  <div class="loader" style="display: none;"></div>
 
-  <div class="loader"></div>
+  <button type="button" class="load-more-btn is-hidden" >Load more</button>
 
-  <button id="load-more-btn">Load more</button>
+  </div>
 
   <script type="module" src="./main.js"></script>
 </body>

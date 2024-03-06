@@ -1,112 +1,145 @@
-// логика работы приложения
-//импорт библиотеки и модулей 
-
+// Логика работы приложения
+// Импорт библиотек и модулей
 import iziToast from "izitoast";
 import "izitoast/dist/css/iziToast.min.css";
+
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 
 import searchImages from './js/pixabay-api';
 import { renderGallery } from './js/render-functions';
 
-// Ссылки на элементы формы поиска, ввода и индикатора загрузки.
 const searchForm = document.getElementById('search-form');
-const searchInput = document.getElementById('search-input');
-const galleryContainer = document.getElementById('gallery');
-const loadMoreBtn = document.getElementById('load-more-btn');
-const loader = document.querySelector('.loader'); // изменено на .loader
-const loadingIndicator = document.querySelector('.loader'); // изменено на .loader
+const gallery = document.querySelector('.gallery');
+const loadMoreBtn = document.querySelector('.load-more-btn');
+const loader = document.querySelector('.loader');
 
-let currentQuery = ''; // хранит текущий запрос
-let currentPage = 1;
+let query = '';
+let page = 1;
+const perPage = 15;
 
-// clearGallery очищает контейнер галереи.
-function clearGallery() {
-  galleryContainer.innerHTML = '';
-}
+let galleryLightbox;
 
-// hideLoader скрывает индикатор загрузки.
-function hideLoader() {
-  loader.style.display = 'none';
-}
+clearGallery();
 
-// showLoader отображает индикатор загрузки.
-const showLoader = () => {
-  loader.style.display = 'block';
-};
+searchForm.addEventListener('submit', onSearchForm);
+loadMoreBtn.addEventListener('click', onLoadMoreBtn);
 
-// Обработчик события для формы поиска
-searchForm.addEventListener('submit', function (event) {
+// Общая обработка данных об изображениях
+function handleImageData(data) {
+    loader.style.display = 'none';  // Скрыть загрузчик
+  const hasNoImages = data.totalHits === 0 || (data.hits && data.hits.length === 0);
+
+  if (hasNoImages && gallery.innerHTML.trim() === '') {
+    alertNoImagesFound();
+  } else {
+    renderGallery(data.hits);
+    galleryLightbox = new SimpleLightbox('.gallery a', {
+      captionsData: 'alt',
+      captionDelay: 250,
+    }).refresh();
+
+    const totalPages = Math.ceil(data.totalHits / perPage);
+
+    if (page > totalPages) {
+      loadMoreBtn.classList.add('is-hidden');
+      alertEndOfSearch();
+    } else {
+      loadMoreBtn.classList.remove('is-hidden');
+      smoothScrollBy(getCardHeight() * 2);
+    }
+  }
+   
+ }
+
+// Поиск и загрузка изображений
+function onSearchForm(event) {
   event.preventDefault();
+  page = 1;
+  query = event.currentTarget.searchQuery.value.trim();
+  gallery.innerHTML = '';
+  loadMoreBtn.classList.add('is-hidden');
 
-    // Получаем значение из поля ввода и убираем пробелы по краям
-  const query = searchInput.value.trim();
-
-   // Очищаем галерею перед новым поиском
-  clearGallery();
-
-  // Если запрос пустой, выводится предупреждение, и происходит очистка галереи 
-  if (query === '') {
-    iziToast.warning({
-      title: 'Warning',
-      message: 'Please enter a search term.',
-    });
-     hideLoader();
-    loadMoreBtn.style.display = 'none'; // Скрываем кнопку "Load more"
-
+   if (query === '') {
+    alertNoEmptySearch();
     return;
   }
 
-   // Сохраняем текущий запрос
-  currentQuery = query;
+   // Очистка поля ввода
+  const searchInput = event.currentTarget.searchQuery;
+  if (searchInput) {
+    searchInput.value = '';
+  }
 
-  // Иначе, вызывается функция showLoader для отображения индикатора загрузки
-  showLoader();
-  
+  searchImages(query, page, perPage)
+    .then(({ data }) => {
+      handleImageData(data);
+     
+    })
+    .catch(error => console.log(error));
+}
 
-  // Отправка запроса к API 
-  searchImages(query)
-    .then(images => {
-      if (images.length === 0) {
-          // Если изображения не найдены, выводим сообщение об ошибке
-        iziToast.error({
-          title: 'Error',
-          message: 'Sorry, there are no images matching your search query. Please try again.',
-        });
-      } else {
-        renderGallery(images);
-            loadMoreBtn.style.display = 'block'; // Отображаем кнопку "Load more"
-        searchInput.value = '';
-      }
+function getCardHeight() {
+  const card = document.querySelector('.gallery-item');
+  const cardHeight = card ? card.getBoundingClientRect().height : 0;
+  return cardHeight;
+}
+
+function smoothScrollBy(distance) {
+  window.scrollBy({
+    top: distance,
+    behavior: 'smooth',
+  });
+}
+
+// Очистка контейнера галереи
+function clearGallery() {
+  gallery.innerHTML = '';
+}
+
+// Загрузка дополнительных изображений
+function onLoadMoreBtn() {
+  loader.style.display = 'block';
+
+  page += 1;
+  galleryLightbox.destroy();
+
+ searchImages(query, page, perPage)
+    .then(({ data }) => {
+      console.log('Total Hits after loading more:', data.totalHits);
+      console.log('Number of hits after loading more:', data.hits.length);
+      handleImageData(data);
     })
-    .catch(error => {
-      console.error('Error in search:', error);
-      searchInput.value = '';
-      iziToast.error({
-        title: 'Error',
-        message: 'An error occurred while fetching images. Please try again.',
-      });
-    })
+    .catch(error => console.log(error))
     .finally(() => {
-      hideLoader(); 
+      loader.style.display = 'none';
     });
-});
+}
 
-// Обработчик события для кнопки "Load more"
-loadMoreBtn.addEventListener('click', function () {
-  // Отправляем запрос на следующую страницу с текущим запросом
-  showLoader();
-  searchImages(currentQuery)
-    .then(images => {
-      if (images.length === 0) {
-        // Если изображения не найдены, скрываем кнопку "Load more"
-        loadMoreBtn.style.display = 'none';
-        hideLoader();
-      } else {
-        renderGallery(images);
-        hideLoader();
-      }
-    })
-    .catch(error => {
-      console.error('Error loading more images:', error);
-      hideLoader();
-    });
-});
+
+
+// Пустой ввод
+function alertNoEmptySearch() {
+  iziToast.error({
+    title: 'Error',
+    message: 'The search string cannot be empty. Please specify your search query.',
+  });
+}
+
+// Сообщение о завершении коллекции изображений
+function alertEndOfSearch() {
+  iziToast.error({
+    title: '',
+    message: "We're sorry, but you've reached the end of search results.",
+    position: 'bottomRight',
+  });
+}
+
+// Изображения не найдены
+function alertNoImagesFound() {
+  iziToast.error({
+    title: '',
+    message: "Sorry, there are no images matching your search query. Please try again!",
+    position: 'bottomRight',
+  });
+}
