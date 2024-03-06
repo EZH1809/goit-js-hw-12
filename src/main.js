@@ -27,30 +27,38 @@ loadMoreBtn.addEventListener('click', onLoadMoreBtn);
 
 // Общая обработка данных об изображениях
 function handleImageData(data) {
-    loader.style.display = 'none';  // Скрыть загрузчик
+  loader.style.display = 'none';
+
   const hasNoImages = data.totalHits === 0 || (data.hits && data.hits.length === 0);
 
   if (hasNoImages && gallery.innerHTML.trim() === '') {
     alertNoImagesFound();
   } else {
-    renderGallery(data.hits);
-    galleryLightbox = new SimpleLightbox('.gallery a', {
-      captionsData: 'alt',
-      captionDelay: 250,
-    }).refresh();
-
     const totalPages = Math.ceil(data.totalHits / perPage);
 
     if (page > totalPages) {
       loadMoreBtn.classList.add('is-hidden');
       alertEndOfSearch();
     } else {
-      loadMoreBtn.classList.remove('is-hidden');
-      smoothScrollBy(getCardHeight() * 2);
+      const currentImagesCount = gallery.querySelectorAll('.gallery-item').length;
+
+      if (currentImagesCount >= data.totalHits) {
+        // Если количество загруженных изображений становится больше или равным totalHits
+        loadMoreBtn.classList.add('is-hidden');
+        alertEndOfSearch();
+      } else {
+        renderGallery(data.hits);
+        galleryLightbox = new SimpleLightbox('.gallery a', {
+          captionsData: 'alt',
+          captionDelay: 250,
+        }).refresh();
+
+        loadMoreBtn.classList.remove('is-hidden');
+        smoothScrollBy(getCardHeight() * 2);
+      }
     }
   }
-   
- }
+}
 
 // Поиск и загрузка изображений
 function onSearchForm(event) {
@@ -60,12 +68,12 @@ function onSearchForm(event) {
   gallery.innerHTML = '';
   loadMoreBtn.classList.add('is-hidden');
 
-   if (query === '') {
+  if (query === '') {
     alertNoEmptySearch();
     return;
   }
 
-   // Очистка поля ввода
+  // Очистка поля ввода
   const searchInput = event.currentTarget.searchQuery;
   if (searchInput) {
     searchInput.value = '';
@@ -74,7 +82,6 @@ function onSearchForm(event) {
   searchImages(query, page, perPage)
     .then(({ data }) => {
       handleImageData(data);
-     
     })
     .catch(error => console.log(error));
 }
@@ -104,27 +111,30 @@ function onLoadMoreBtn() {
   page += 1;
   galleryLightbox.destroy();
 
- searchImages(query, page, perPage)
+  searchImages(query, page, perPage)
     .then(({ data }) => {
-      console.log('Total Hits after loading more:', data.totalHits);
-      console.log('Number of hits after loading more:', data.hits.length);
-      handleImageData(data);
+    
+      const currentImagesCount = gallery.querySelectorAll('.gallery-item').length;
+
+      if (currentImagesCount >= data.totalHits) {
+        // Если количество загруженных изображений становится больше или равным totalHits
+        loadMoreBtn.classList.add('is-hidden');
+        alertEndOfSearch();
+      } else {
+        handleImageData(data);
+      }
     })
     .catch(error => console.log(error))
     .finally(() => {
       loader.style.display = 'none';
     });
 }
-
-
-
 // Пустой ввод
 function alertNoEmptySearch() {
   iziToast.error({
     title: 'Error',
     message: 'The search string cannot be empty. Please specify your search query.',
   });
-  return;
 }
 
 // Сообщение о завершении коллекции изображений
@@ -134,7 +144,6 @@ function alertEndOfSearch() {
     message: "We're sorry, but you've reached the end of search results.",
     position: 'bottomRight',
   });
-  return;
 }
 
 // Изображения не найдены
@@ -144,5 +153,6 @@ function alertNoImagesFound() {
     message: "Sorry, there are no images matching your search query. Please try again!",
     position: 'bottomRight',
   });
-  return;
 }
+
+

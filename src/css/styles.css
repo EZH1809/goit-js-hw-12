@@ -65,7 +65,7 @@ body {
   padding-left: 15px;
   padding-right: 15px;
   padding-bottom: 25px;
-}
+ }
 
 .gallery,
 .info {
@@ -76,7 +76,7 @@ body {
 .gallery {
   margin-left: 20px;
   padding-top: 60px;
-  justify-content: center;
+  
 }
 
 .gallery__link {

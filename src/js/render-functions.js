@@ -15,7 +15,6 @@ export const renderGallery = (images) => {
       message: 'Sorry, there are no images matching your search query. Please try again!',
     });
 
-    return; // Прерываем выполнение функции, так как нет изображений
   }
 
  // Создаем разметку для галереи
